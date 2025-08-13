@@ -8,6 +8,11 @@
   line-height: 200px;
   font-size: 50px;
 }
+.matched{
+  background-color: lightgreen;
+  color: white;
+  font-weight: bold
+}
 </style>
 
 <table>
@@ -24,11 +29,11 @@
     <td>
       <div class = "memory_box" id = "box_3"></div>
     </td>
-  </tr>
-  <tr>
     <td>
       <div class = "memory_box" id = "box_4"></div>
     </td>
+  </tr>
+  <tr>
     <td>
       <div class = "memory_box" id = "box_5"></div>
     </td>
@@ -37,6 +42,12 @@
     </td>
     <td>
       <div class = "memory_box" id = "box_7"></div>
+    </td>
+    <td>
+      <div class = "memory_box" id = "box_8"></div>
+    </td>
+    <td>
+      <div class = "memory_box" id = "box_9"></div>
     </td>
   </tr>
 </table>
@@ -50,17 +61,21 @@ card_obj = {
     "b", //box 1
     "c", //box 2
     "d", //box 3
-    "a", //box 4
-    "b", //box 5
-    "c", //box 6
-    "d"  //box 7
+    "e", //box 4
+    "a", //box 5
+    "b", //box 6
+    "c", //box 7
+    "d", //box 8
+    "e"  //box 9
   ],
   visible_letters: [],
   selected_boxes: [],
+  matched_boxes: []
 };
 
 /*
-  Function to shuffle the card_obj array so it will be different for different participants
+  Javascript implementation of the Fisher-Yates shuffle
+  Will randomise order of card_letters for each user
 */
 function shuffle(array) {
   let currentIndex = array.length;
@@ -81,6 +96,7 @@ function shuffle(array) {
 let arr = card_obj["card_letters"]
 shuffle(arr);
 console.log(arr);
+
 </script>
 
 <script>
@@ -89,14 +105,11 @@ $(".memory_box").on("click", function(){
   var this_letter = card_obj.card_letters[this_index];
   $(this).html(this_letter)
 
-  /*
-    Add the box id to the list of selected selected_boxes
-  */
-  card_obj["selected_boxes"].push(this.id);
+  // Prevent clicking already matched matched_boxes
+  if($(this).hasClass("matched")) return;
 
-  /*
-    Add the selected letter to the list of visible letters
-  */
+  // Add to selection arrays
+  card_obj["selected_boxes"].push(this.id);
   card_obj["visible_letters"].push(this_letter);
 
   var cards_visible = card_obj["selected_boxes"].length;
@@ -104,26 +117,36 @@ $(".memory_box").on("click", function(){
   if(cards_visible == 2){
     var first_letter = card_obj["visible_letters"][0];
     var second_letter = card_obj["visible_letters"][1];
+    var first_box = card_obj["selected_boxes"][0];
+    var second_box = card_obj["selected_boxes"][1];
+
     if(first_letter == second_letter){
-      //remove these matching cards/ boxes from the Game
-      setTimeout(function(){
-        var first_box = card_obj["selected_boxes"][0];
-        var second_box = card_obj["selected_boxes"][1];
-        $("#" + first_box).fadeOut();
-        $("#" + second_box).fadeOut();
-        // resets arrays to empty
-        card_obj["selected_boxes"] = [];
-        card_obj["visible_letters"] = [];
-      }, 2000);
+      // Mark them as matched
+      $("#" + first_box).addClass("matched");
+      $("#" + second_box).addClass("matched");
+
+      // Track matched boxes
+      card_obj["matched_boxes"].push(first_box, second_box);
+
+      //Reset for next turn
+      card_obj["selected_boxes"] = [];
+      card_obj["visible_letters"] = [];
+
+      // Check win condition
+      if(card_obj["matched_boxes"].length === card_obj.card_letters.length){
+        setTimeout(function(){
+          alert("You win!");
+        }, 500);
+      }
     } else {
-      //what to do if the two letters don't match
+      // If not a match, hide letters after delay
       setTimeout(function(){
-        //resets arrays to empty
-        $(".memory_box").html("");
+        $("#" + first_box).html("");
+        $("#" + second_box).html("");
         card_obj["selected_boxes"] = [];
         card_obj["visible_letters"] = [];
-      }, 2000);
+      }, 1000);
     }
   }
-});
+  });
 </script>
